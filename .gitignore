@@ -1,0 +1,31 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Node
+node_modules/
+.next/
+out/
+.npm/
+.pnp.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+npm-debug.log*

@@ -1,0 +1,78 @@
+# Root docker-compose.yml — wires Postgres, FastAPI backend, and Next.js
+# frontend for the Recompile Archive — Bitcoin technical writing archive with AI tools.
+#
+# Start the full stack:
+#     docker compose up --build
+#
+# Seed the database (one-time, after first up):
+#     docker compose exec backend python seed.py
+#
+# URLs once up:
+#     Frontend  → http://localhost:3000
+#     Backend   → http://localhost:8000  (Swagger at /docs)
+#     Postgres  → localhost:5432  (internal name: db)
+#
+# Required env var (in a .env file next to this compose file):
+#     ANTHROPIC_API_KEY=sk-ant-...
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: recompile
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d recompile"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      # Note: inside the compose network the DB hostname is `db`, not localhost.
+      DATABASE_URL: postgresql://postgres:password@db:5432/recompile
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Bind-mount the api directory for hot reload during demo.
+      - ./api:/app
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Baked into the client bundle at `next build` (production builds).
+        # In dev mode Next.js reads NEXT_PUBLIC_* from the runtime env below,
+        # so this only matters when we switch to multi-stage `next build`.
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    ports:
+      - "3000:3000"
+    environment:
+      # The browser hits this URL — defaults to localhost for dev.
+      # For production deployment, set NEXT_PUBLIC_API_URL in the root .env
+      # (e.g. https://api.bitcoincoding.dev) and the override flows through here.
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    depends_on:
+      - backend
+    volumes:
+      # Bind-mount the source for hot reload.
+      - ./frontend:/app
+      # Keep node_modules and .next inside the container (not from host).
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  pgdata:
