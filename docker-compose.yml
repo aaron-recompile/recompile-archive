@@ -42,6 +42,9 @@ services:
       # Note: inside the compose network the DB hostname is `db`, not localhost.
       DATABASE_URL: postgresql://postgres:password@db:5432/recompile
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      # Comma-separated list of origins allowed by CORS. In production, include
+      # the deployed frontend URL (e.g. https://archive.bitcoincoding.dev).
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
     depends_on:
       db:
         condition: service_healthy

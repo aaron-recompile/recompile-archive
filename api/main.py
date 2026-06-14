@@ -1,3 +1,5 @@
+import os
+
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -19,9 +21,15 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Recompile Archive API", version="1.0.0")
 
+# Comma-separated origins from env, defaulting to local dev only.
+# In production set CORS_ALLOWED_ORIGINS to include the deployed frontend URL,
+# e.g. "https://archive.bitcoincoding.dev,http://localhost:3000"
+_origins_env = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000")
+ALLOWED_ORIGINS = [o.strip() for o in _origins_env.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
