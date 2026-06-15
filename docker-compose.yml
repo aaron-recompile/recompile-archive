@@ -57,25 +57,15 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # Baked into the client bundle at `next build` (production builds).
-        # In dev mode Next.js reads NEXT_PUBLIC_* from the runtime env below,
-        # so this only matters when we switch to multi-stage `next build`.
+        # Baked into the client bundle at `next build` time. Override in the
+        # root .env (NEXT_PUBLIC_API_URL=https://api.your-domain.com).
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     ports:
       - "3000:3000"
-    environment:
-      # The browser hits this URL — defaults to localhost for dev.
-      # For production deployment, set NEXT_PUBLIC_API_URL in the root .env
-      # (e.g. https://api.bitcoincoding.dev) and the override flows through here.
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     depends_on:
       - backend
-    volumes:
-      # Bind-mount the source for hot reload.
-      - ./frontend:/app
-      # Keep node_modules and .next inside the container (not from host).
-      - /app/node_modules
-      - /app/.next
+    # No bind mounts: production runs the pre-built standalone server.
+    # For dev with hot reload, run `npm run dev` directly outside Docker.
 
 volumes:
   pgdata:

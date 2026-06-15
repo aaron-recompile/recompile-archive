@@ -1,27 +1,41 @@
-# Dev-mode Dockerfile.
-# Uses Next.js dev server with hot-reload (volume-mounted source in compose).
-# For production we'd want a multi-stage build with `next build` + `next start`,
-# but dev mode keeps hot reload during development.
+# Multi-stage production Dockerfile.
+# Stage 1 builds the app; stage 2 runs the standalone Next.js server with
+# only the files it needs. Final image ~200 MB vs ~600 MB for dev mode,
+# and the runtime uses ~150 MB RAM vs ~1 GB for `next dev` with Turbopack.
 
-FROM node:22-alpine
-
+# === Builder ===========================================================
+FROM node:22-alpine AS builder
 WORKDIR /app
 
-# NEXT_PUBLIC_* are bundled into the client at build time when running
-# `next build`. We accept it as an ARG so production builds can bake in
-# the real API URL (e.g. https://api.bitcoincoding.dev). In dev mode
-# (next dev), Next.js reads it from runtime env instead.
+# NEXT_PUBLIC_* env vars are baked into the client bundle at `next build`
+# time. Set this to the public API URL when deploying — local dev defaults
+# to http://localhost:8000.
 ARG NEXT_PUBLIC_API_URL=http://localhost:8000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
-# Install dependencies first for cache efficiency.
+# Install deps separately from source for cache efficiency.
 COPY package.json package-lock.json* ./
-RUN npm install
+RUN npm ci
 
-# Copy the rest of the source (overlaid by volume mount in compose anyway).
+# Build with a heap cap so this works on small VMs (e.g. e2-small w/ 2 GB).
 COPY . .
+ENV NODE_OPTIONS=--max-old-space-size=1536
+RUN npm run build
+
+# === Runner ============================================================
+FROM node:22-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
+
+# next.config.ts has `output: "standalone"`, so .next/standalone contains
+# a minimal server.js + only the node_modules it actually needs. Public
+# assets and the static chunks must be copied separately.
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
 EXPOSE 3000
 
-# Bind to 0.0.0.0 so it's reachable from the host (not just the container).
-CMD ["npm", "run", "dev", "--", "-H", "0.0.0.0"]
+CMD ["node", "server.js"]
