@@ -3,7 +3,6 @@
 A small AI-augmented archive for my long-form Bitcoin protocol writing — search, summarize, classify, and converse with my own articles through a tool-using agent.
 
 **Live:** [archive.bitcoincoding.dev](https://archive.bitcoincoding.dev) *(deployment in progress)*
-**Author:** [Aaron Zhang](https://medium.com/@aaron.recompile) — Bitcoin Layer 1 engineer, author of [*Mastering Taproot*](https://bitcoincoding.dev), OpenSats grantee.
 **Sister site:** [bitcoincoding.dev](https://bitcoincoding.dev) — *Mastering Taproot* interactive labs.
 
 ## What it does
