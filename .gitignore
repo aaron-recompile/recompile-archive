@@ -3,6 +3,9 @@
 .env.local
 .env.*.local
 
+# Private dev handoff (GCP / deployment specifics — never commit)
+RECOMPILE-ARCHIVE-HANDOFF.md
+
 # Python
 venv/
 __pycache__/

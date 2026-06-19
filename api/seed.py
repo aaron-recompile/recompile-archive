@@ -112,6 +112,61 @@ SERIES = [
             },
         ],
     },
+    {
+        "name": "Delving Bitcoin",
+        "slug": "delving-bitcoin",
+        "description": "First-hand research posts on Delving Bitcoin: Bitcoin Inquisition signet experiments and covenant design, several with on-chain signet TXIDs in-thread.",
+        "articles": [
+            {
+                "title": "Bitcoin Inquisition 29.2 (opcode experiment index)",
+                "subtitle": "Inquisition 29.2 (on Core 29.3rc2) heretically activates BIP 118 (ANYPREVOUT), BIP 119 (CTV), BIP 347 (OP_CAT) and BIP 348 (CSFS) on signet — the opcode playground these experiments run on.",
+                "url": "https://delvingbitcoin.org/t/bitcoin-inqusition-29-2/2236",
+                "position": 1,
+            },
+            {
+                "title": "Eltoo State Chain on Signet — 3 rounds, 6 tx (APO+CTV)",
+                "subtitle": "A three-round Eltoo-style state chain on Inquisition signet, each state UTXO a three-leaf Taproot tree (CTV settle, APO update, CSV escape) — six confirmed transactions.",
+                "url": "https://delvingbitcoin.org/t/eltoo-state-chain-on-signet-three-rounds-six-transactions-apo-ctv/2413",
+                "position": 2,
+            },
+            {
+                "title": "Eltoo State Chain on Signet Again — 3 rounds, 2 tx (CSFS+CTV, rekey+ladder, no CAT)",
+                "subtitle": "Same three-round scenario, primitive switched to CSFS+CTV: a single CSFS delegation ladder with CTV-enforced settlement compresses the six transactions down to two — no OP_CAT.",
+                "url": "https://delvingbitcoin.org/t/eltoo-state-chain-on-signet-again-three-rounds-two-transactions-csfs-ctv-with-rekey-and-ladder-no-cat/2430",
+                "position": 3,
+            },
+            {
+                "title": "Challenge: Covenants for Braidpool",
+                "subtitle": "Bob McElrath's open challenge to find covenant constructions for Braidpool's rolling coinbase aggregation (RCA → UHPO) custody; Aaron joined the thread with a reply.",
+                "url": "https://delvingbitcoin.org/t/challenge-covenants-for-braidpool/1370",
+                "position": 4,
+            },
+            {
+                "title": "What exactly is bound in CSFS, IK+CSFS, and CHECKSIG?",
+                "subtitle": "An observable comparison of what three Tapscript constructions actually bind: CSFS binds a stack-supplied message (replayable), IK+CSFS binds identity, CHECKSIG binds the tx sighash (non-replayable).",
+                "url": "https://delvingbitcoin.org/t/what-exactly-is-bound-in-csfs-ik-csfs-and-checksig/2351",
+                "position": 5,
+            },
+            {
+                "title": "Taproot-native prevout binding via sighash-preimage decomposition",
+                "subtitle": "Binding one input's outpoint to another using the sha_prevouts field of the sighash preimage as the anchor — full witness layout for the CTV+CSFS BitVM-bridge binding problem.",
+                "url": "https://delvingbitcoin.org/t/taproot-native-prevout-binding-via-sighash-preimage-decomposition/2483",
+                "position": 6,
+            },
+            {
+                "title": "CTV+CSFS: Can We Reach Consensus on a First Step Towards Covenants",
+                "subtitle": "The long-running debate on whether CTV+CSFS is the right first covenant step — including whether it is truly equivalent to APO / Lightning Symmetry; Aaron participated in the discussion.",
+                "url": "https://delvingbitcoin.org/t/ctv-csfs-can-we-reach-consensus-on-a-first-step-towards-covenants/1509/14",
+                "position": 7,
+            },
+            {
+                "title": "CTV / APO / CAT Activity on Signet",
+                "subtitle": "AJ Towns' survey of how BIP 118 (APO), BIP 119 (CTV) and BIP 347 (OP_CAT) have actually been used on signet since 2022; Aaron participated in the thread.",
+                "url": "https://delvingbitcoin.org/t/ctv-apo-cat-activity-on-signet/1257",
+                "position": 8,
+            },
+        ],
+    },
 ]
 
 STANDALONES = [
@@ -167,28 +222,45 @@ STANDALONES = [
 
 
 def seed():
+    """Idempotent + additive seed.
+
+    Adds any series whose slug is not already present (with its articles), and
+    any standalone article whose url is not already present. Existing rows are
+    left untouched, so this is safe to re-run on a populated production DB to
+    pull in newly-added content without wiping data.
+    """
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
-        if db.query(Series).count() > 0:
-            print("Database already has series; skipping seed.")
-            return
+        added_series = 0
+        added_articles = 0
 
         for series_spec in SERIES:
-            articles = series_spec.pop("articles")
-            series = Series(**series_spec)
+            spec = dict(series_spec)  # copy so we don't mutate the module-level list
+            articles = spec.pop("articles")
+            if db.query(Series).filter_by(slug=spec["slug"]).first():
+                continue
+            series = Series(**spec)
             db.add(series)
             db.flush()
             for art in articles:
                 db.add(Article(series_id=series.id, **art))
+                added_articles += 1
+            added_series += 1
 
         for art in STANDALONES:
+            if art.get("url") and db.query(Article).filter_by(url=art["url"]).first():
+                continue
             db.add(Article(**art))
+            added_articles += 1
 
         db.commit()
         n_series = db.query(Series).count()
         n_articles = db.query(Article).count()
-        print(f"Seeded {n_series} series and {n_articles} articles.")
+        print(
+            f"Seed complete: +{added_series} series, +{added_articles} articles "
+            f"(now {n_series} series, {n_articles} articles)."
+        )
     finally:
         db.close()
 

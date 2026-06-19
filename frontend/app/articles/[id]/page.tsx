@@ -158,7 +158,12 @@ export default function ArticleDetailPage({
               rel="noopener noreferrer"
               className="text-blue-600 underline text-sm"
             >
-              Read on Medium ↗
+              {article.url.includes("delvingbitcoin.org")
+                ? "Read on Delving Bitcoin"
+                : article.url.includes("medium.com")
+                  ? "Read on Medium"
+                  : "Read original"}{" "}
+              ↗
             </a>
           </p>
         )}
