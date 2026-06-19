@@ -2,6 +2,11 @@
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
+// Public deployments build with NEXT_PUBLIC_READONLY=1 to hide all
+// create/edit/delete UI — the public site is browse + AI tools only.
+// Local dev leaves it unset (full CRUD UI = internal editing interface).
+export const READONLY = process.env.NEXT_PUBLIC_READONLY === "1";
+
 export interface Series {
   id: number;
   name: string;

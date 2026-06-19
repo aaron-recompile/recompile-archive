@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { API_URL, Series } from "../../lib/api";
+import { API_URL, READONLY, Series } from "../../lib/api";
 
 export default function NewArticlePage() {
   const router = useRouter();
@@ -66,6 +66,19 @@ export default function NewArticlePage() {
       setError(err instanceof Error ? err.message : "Unknown error");
       setIsSubmitting(false);
     }
+  }
+
+  if (READONLY) {
+    return (
+      <main className="max-w-2xl mx-auto px-8 py-10">
+        <p className="text-gray-600">
+          This archive is read-only.{" "}
+          <Link href="/articles" className="text-blue-600 underline">
+            ← Back to list
+          </Link>
+        </p>
+      </main>
+    );
   }
 
   return (

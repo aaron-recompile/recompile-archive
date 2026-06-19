@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import {
   API_URL,
+  READONLY,
   SeriesWithArticles,
   formatDate,
 } from "../../lib/api";
@@ -77,13 +78,15 @@ export default function SeriesDetailPage({
       <div className="mt-4 bg-white border rounded-lg p-6">
         <div className="flex items-start justify-between gap-4 mb-2">
           <h1 className="text-3xl font-bold">{series.name}</h1>
-          <button
-            disabled={busy}
-            onClick={deleteSeries}
-            className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-3 py-1.5 rounded text-sm"
-          >
-            Delete series
-          </button>
+          {!READONLY && (
+            <button
+              disabled={busy}
+              onClick={deleteSeries}
+              className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-3 py-1.5 rounded text-sm"
+            >
+              Delete series
+            </button>
+          )}
         </div>
         <p className="text-sm text-gray-500 mb-3">slug: {series.slug}</p>
         {series.description && (

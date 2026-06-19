@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
+import { READONLY } from "./lib/api";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -50,12 +51,14 @@ export default function RootLayout({
             >
               ✨ AI
             </Link>
-            <Link
-              href="/articles/new"
-              className="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm"
-            >
-              + New Article
-            </Link>
+            {!READONLY && (
+              <Link
+                href="/articles/new"
+                className="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm"
+              >
+                + New Article
+              </Link>
+            )}
           </div>
         </nav>
         <div className="flex-1">{children}</div>

@@ -13,6 +13,10 @@ WORKDIR /app
 ARG NEXT_PUBLIC_API_URL=http://localhost:8000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
+# Set to 1 in production to hide all create/edit/delete UI (read-only site).
+ARG NEXT_PUBLIC_READONLY=0
+ENV NEXT_PUBLIC_READONLY=$NEXT_PUBLIC_READONLY
+
 # Install deps separately from source for cache efficiency.
 COPY package.json package-lock.json* ./
 RUN npm ci

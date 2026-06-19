@@ -6,6 +6,7 @@ import { use, useEffect, useState } from "react";
 import {
   API_URL,
   ArticleWithSeries,
+  READONLY,
   Series,
   formatDate,
 } from "../../lib/api";
@@ -169,6 +170,7 @@ export default function ArticleDetailPage({
         )}
       </div>
 
+      {!READONLY && (
       <div className="mt-6 bg-white border rounded-lg p-6">
         <h2 className="font-semibold mb-4">Edit placement</h2>
 
@@ -230,6 +232,7 @@ export default function ArticleDetailPage({
           </button>
         </div>
       </div>
+      )}
     </main>
   );
 }

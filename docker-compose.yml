@@ -60,6 +60,9 @@ services:
         # Baked into the client bundle at `next build` time. Override in the
         # root .env (NEXT_PUBLIC_API_URL=https://api.your-domain.com).
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+        # Set NEXT_PUBLIC_READONLY=1 in the root .env on public deployments to
+        # hide all create/edit/delete UI. Defaults to 0 (full CRUD UI locally).
+        NEXT_PUBLIC_READONLY: ${NEXT_PUBLIC_READONLY:-0}
     ports:
       - "3000:3000"
     depends_on:
