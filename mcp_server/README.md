@@ -17,6 +17,13 @@ project's `docker-compose` (`localhost:5432`). The stack must be running
 | `list_articles(series_slug?)` | articles, optionally filtered to one series |
 | `get_article(article_id)` | one article (with series) |
 | `search(query, limit=10)` | keyword-ranked articles with URLs |
+| `get_profile()` | the full CV-grade artifacts manifest (repos, packages, papers, contributions, grants/roles, platforms) read live from `artifacts.yaml` |
+
+`list_*` / `get_article` / `search` cover Aaron's **writing**; `get_profile`
+adds everything else (tooling, research, grants…) so a model can write a
+*complete* bio. `get_profile` reads `RECOMPILE_ARTIFACTS_YAML` (defaults to
+`/Volumes/MAC_Programs/grants_26_summer/artifacts.yaml`) — editing that file is
+all it takes to update the manifest; nothing is duplicated into the DB.
 
 ## Setup
 

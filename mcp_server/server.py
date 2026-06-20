@@ -15,16 +15,26 @@ Run (stdio transport):
 Tools: list_series, list_articles, get_article, search.
 """
 
+import json
 import os
 import re
 
 import psycopg
+import yaml
 from psycopg.rows import dict_row
 from mcp.server.fastmcp import FastMCP
 
 DATABASE_URL = os.environ.get(
     "RECOMPILE_DATABASE_URL",
     "postgresql://postgres:password@localhost:5432/recompile",
+)
+
+# Canonical CV-grade artifacts manifest (positioning, repos, papers, grants,
+# roles, …) — the breadth the article DB doesn't hold. Single source of truth,
+# read live so editing the YAML is enough; nothing is duplicated into the DB.
+ARTIFACTS_YAML = os.environ.get(
+    "RECOMPILE_ARTIFACTS_YAML",
+    "/Volumes/MAC_Programs/grants_26_summer/artifacts.yaml",
 )
 
 mcp = FastMCP("recompile-archive")
@@ -111,6 +121,25 @@ def search(query: str, limit: int = 10) -> list[dict]:
             scored.append((score, r))
     scored.sort(key=lambda x: -x[0])
     return [r for _, r in scored[:limit]]
+
+
+@mcp.tool()
+def get_profile() -> dict:
+    """Aaron's full artifacts manifest — the CV-grade inventory beyond the article archive.
+
+    Returns positioning, repos, packages, books, papers, protocol contributions,
+    grants/roles (e.g. OpenSats, Chaincode Labs), platforms and notable
+    interactions — all from the canonical artifacts.yaml. Use this (together with
+    the article tools) to write a complete bio or to answer "what has Aaron
+    built / published / contributed", not just "what has Aaron written".
+    """
+    try:
+        with open(ARTIFACTS_YAML) as f:
+            data = yaml.safe_load(f)
+    except FileNotFoundError:
+        return {"error": f"artifacts manifest not found at {ARTIFACTS_YAML}"}
+    # Coerce dates etc. to JSON-safe primitives.
+    return json.loads(json.dumps(data, default=str))
 
 
 if __name__ == "__main__":
