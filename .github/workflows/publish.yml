@@ -1,0 +1,65 @@
+name: Publish to dev.to
+
+# Push a changed .md under _publish-lab/content/ to main -> it auto-publishes
+# (create or update) on dev.to. Dedup is stateless (queried live from dev.to),
+# so re-runs never create duplicates. Manual runs can force the whole catalog.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "_publish-lab/content/**.md"
+  workflow_dispatch:
+    inputs:
+      all:
+        description: "Publish the entire content/ dir (not just changed files)"
+        type: boolean
+        default: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2   # need the previous commit to diff against
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Determine which articles to publish
+        id: pick
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.all }}" = "true" ]; then
+            echo "targets=_publish-lab/content" >> "$GITHUB_OUTPUT"
+            echo "Publishing ENTIRE catalog."
+            exit 0
+          fi
+          BEFORE='${{ github.event.before }}'
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            RANGE="HEAD~1 HEAD"
+          else
+            RANGE="$BEFORE ${{ github.sha }}"
+          fi
+          CHANGED=$(git diff --name-only --diff-filter=AM $RANGE -- '_publish-lab/content/**.md' || true)
+          echo "Changed files:"; echo "$CHANGED"
+          # join into a space-separated list
+          TARGETS=$(echo "$CHANGED" | tr '\n' ' ' | sed 's/ *$//')
+          echo "targets=$TARGETS" >> "$GITHUB_OUTPUT"
+
+      - name: Publish
+        if: steps.pick.outputs.targets != ''
+        env:
+          DEVTO_API_KEY: ${{ secrets.DEVTO_API_KEY }}
+        run: |
+          cd _publish-lab
+          # strip the _publish-lab/ prefix from paths passed to the script
+          ARGS=$(echo "${{ steps.pick.outputs.targets }}" | sed 's#_publish-lab/##g')
+          echo "python3 publish.py $ARGS --platform devto --publish"
+          python3 publish.py $ARGS --platform devto --publish
+
+      - name: Nothing to publish
+        if: steps.pick.outputs.targets == ''
+        run: echo "No changed .md under content/ — nothing to do."

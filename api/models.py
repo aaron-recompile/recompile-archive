@@ -29,6 +29,7 @@ class Article(Base):
     published_at = Column(Date, nullable=True)
     url = Column(String, nullable=True)
     position = Column(Integer, nullable=True)
+    content = Column(Text, nullable=True)  # full Markdown body (from _publish-lab/content)
 
     series_id = Column(Integer, ForeignKey("series.id"), nullable=True, index=True)
     series = relationship("Series", back_populates="articles")

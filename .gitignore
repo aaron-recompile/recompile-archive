@@ -6,6 +6,9 @@
 # Private dev handoff (GCP / deployment specifics — never commit)
 RECOMPILE-ARCHIVE-HANDOFF.md
 
+# Local MCP client config (machine-specific absolute paths)
+.mcp.json
+
 # Python
 venv/
 .venv/
@@ -33,3 +36,9 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Publish lab — commit the pipeline + content, but never the secrets/cache/raw export
+_publish-lab/.env
+_publish-lab/_publish_state.json
+_publish-lab/medium-export/
+_publish-lab/*.zip
