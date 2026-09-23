@@ -1,40 +1,16 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { API_URL, Series } from "../lib/api";
+import { getSeriesWithCounts } from "../lib/server-api";
 
-interface SeriesWithCount extends Series {
-  article_count: number;
-}
+export const revalidate = 300;
 
-export default function SeriesListPage() {
-  const [series, setSeries] = useState<SeriesWithCount[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const metadata = {
+  title: "Series — Recompile Archive",
+  description:
+    "Article series on Bitcoin Script, Taproot, and experimental opcodes run on Signet.",
+};
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const list: Series[] = await (await fetch(`${API_URL}/series`)).json();
-        const withCounts: SeriesWithCount[] = await Promise.all(
-          list.map(async (s) => {
-            const detail = await (await fetch(`${API_URL}/series/${s.id}`)).json();
-            return { ...s, article_count: detail.articles.length };
-          })
-        );
-        setSeries(withCounts);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load series");
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
-
-  if (loading) return <p className="p-8 text-gray-600">Loading series…</p>;
-  if (error) return <p className="p-8 text-red-600">Error: {error}</p>;
+export default async function SeriesListPage() {
+  const series = await getSeriesWithCounts();
 
   return (
     <main className="max-w-5xl mx-auto px-8 py-10">

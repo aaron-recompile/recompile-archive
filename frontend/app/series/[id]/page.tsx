@@ -1,76 +1,46 @@
-"use client";
-
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
-import {
-  API_URL,
-  READONLY,
-  SeriesWithArticles,
-  formatDate,
-} from "../../lib/api";
+import { notFound } from "next/navigation";
+import DeleteSeriesButton from "../../components/DeleteSeriesButton";
+import { formatDate, READONLY } from "../../lib/api";
+import { JsonLd, seriesGraph } from "../../lib/schema";
+import { getSeriesDetail } from "../../lib/server-api";
 
-export default function SeriesDetailPage({
+export const revalidate = 300;
+
+export async function generateMetadata({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = use(params);
-  const router = useRouter();
+  const { id } = await params;
+  const series = await getSeriesDetail(id);
+  if (!series) return { title: "Series not found — Recompile Archive" };
+  return {
+    title: `${series.name} — Recompile Archive`,
+    description:
+      series.description ??
+      `${series.articles.length} articles in the ${series.name} series.`,
+    openGraph: {
+      title: series.name,
+      description: series.description ?? undefined,
+      type: "website",
+    },
+  };
+}
 
-  const [series, setSeries] = useState<SeriesWithArticles | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch(`${API_URL}/series/${id}`);
-        if (res.status === 404) throw new Error("Series not found");
-        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-        setSeries(await res.json());
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [id]);
-
-  async function deleteSeries() {
-    if (
-      !confirm(
-        "Delete this series? All articles in it will also be deleted (cascade)."
-      )
-    )
-      return;
-    setBusy(true);
-    try {
-      const res = await fetch(`${API_URL}/series/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
-      router.push("/series");
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Delete failed");
-      setBusy(false);
-    }
-  }
-
-  if (loading) return <p className="p-8 text-gray-600">Loading…</p>;
-  if (error)
-    return (
-      <main className="max-w-3xl mx-auto px-8 py-10">
-        <p className="text-red-600 mb-4">Error: {error}</p>
-        <Link href="/series" className="text-blue-600 underline">
-          ← Back to series
-        </Link>
-      </main>
-    );
-  if (!series) return null;
+export default async function SeriesDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const series = await getSeriesDetail(id);
+  if (!series) notFound();
 
   return (
     <main className="max-w-3xl mx-auto px-8 py-10">
+      <JsonLd data={seriesGraph(series, series.articles)} />
+
       <Link href="/series" className="text-blue-600 underline text-sm">
         ← Back to series
       </Link>
@@ -78,15 +48,7 @@ export default function SeriesDetailPage({
       <div className="mt-4 bg-white border rounded-lg p-6">
         <div className="flex items-start justify-between gap-4 mb-2">
           <h1 className="text-3xl font-bold">{series.name}</h1>
-          {!READONLY && (
-            <button
-              disabled={busy}
-              onClick={deleteSeries}
-              className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-3 py-1.5 rounded text-sm"
-            >
-              Delete series
-            </button>
-          )}
+          {!READONLY && <DeleteSeriesButton id={series.id} />}
         </div>
         <p className="text-sm text-gray-500 mb-3">slug: {series.slug}</p>
         {series.description && (
@@ -101,12 +63,11 @@ export default function SeriesDetailPage({
       {series.articles.length === 0 ? (
         <p className="text-gray-600 text-sm">
           No articles in this series yet.{" "}
-          <Link
-            href="/articles/new"
-            className="text-blue-600 underline"
-          >
-            Add one →
-          </Link>
+          {!READONLY && (
+            <Link href="/articles/new" className="text-blue-600 underline">
+              Add one →
+            </Link>
+          )}
         </p>
       ) : (
         <ol className="space-y-3">

@@ -65,6 +65,12 @@ services:
         NEXT_PUBLIC_READONLY: ${NEXT_PUBLIC_READONLY:-0}
     ports:
       - "3000:3000"
+    environment:
+      # Runtime, server-side only. Used by /robots.txt, /sitemap.xml and
+      # /llms.txt, which render on the server inside this container and so
+      # reach the backend by compose service name, not by public hostname.
+      API_URL_INTERNAL: http://backend:8000
+      SITE_URL: ${SITE_URL:-https://archive.bitcoincoding.dev}
     depends_on:
       - backend
     # No bind mounts: production runs the pre-built standalone server.
