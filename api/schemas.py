@@ -67,3 +67,7 @@ class SeriesWithArticles(SeriesResponse):
 
 class ArticleWithSeries(ArticleResponse):
     series: Optional[SeriesResponse]
+    # Full Markdown body. Deliberately absent from ArticleResponse: the list
+    # endpoints return 28 rows, and shipping every body would make /articles
+    # megabytes. Detail pages are the only place that needs it.
+    content: Optional[str] = None

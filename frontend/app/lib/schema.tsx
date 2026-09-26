@@ -89,6 +89,11 @@ export function articleGraph(a: ArticleWithSeries) {
     author: { "@id": PERSON_ID },
     publisher: { "@id": PERSON_ID },
     isPartOf: { "@id": WEBSITE_ID },
+    // wordCount, not articleBody: the text is already in the page for a
+    // crawler to read, and repeating it in JSON-LD would double page weight.
+    ...(a.content
+      ? { wordCount: a.content.trim().split(/\s+/).length }
+      : {}),
     about: [
       thing("Bitcoin Script", WIKIDATA.bitcoinScript),
       thing("Taproot", WIKIDATA.taproot),

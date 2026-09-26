@@ -24,3 +24,83 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ---- Article body -------------------------------------------------------
+   Long-form Markdown rendered server-side. Hand-rolled rather than pulling in
+   @tailwindcss/typography: the corpus is technical prose with a lot of inline
+   code and fenced blocks, and those are the parts worth tuning by hand.       */
+.prose-archive {
+  color: #27272a;
+  line-height: 1.75;
+  font-size: 1.0625rem;
+}
+.prose-archive > * + * { margin-top: 1.1em; }
+.prose-archive h1,
+.prose-archive h2,
+.prose-archive h3,
+.prose-archive h4 {
+  font-weight: 650;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  margin-top: 2em;
+  margin-bottom: 0.6em;
+  scroll-margin-top: 1rem;
+}
+.prose-archive h1 { font-size: 1.75rem; }
+.prose-archive h2 { font-size: 1.4rem; }
+.prose-archive h3 { font-size: 1.15rem; }
+.prose-archive h4 { font-size: 1.02rem; }
+.prose-archive a { color: #2563eb; text-decoration: underline; }
+.prose-archive strong { font-weight: 650; color: #18181b; }
+.prose-archive ul,
+.prose-archive ol { padding-left: 1.5rem; }
+.prose-archive ul { list-style: disc; }
+.prose-archive ol { list-style: decimal; }
+.prose-archive li + li { margin-top: 0.35em; }
+.prose-archive blockquote {
+  border-left: 3px solid #d4d4d8;
+  padding-left: 1rem;
+  color: #52525b;
+  font-style: italic;
+}
+.prose-archive code {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.875em;
+  background: #f4f4f5;
+  border: 1px solid #e4e4e7;
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  overflow-wrap: anywhere;
+}
+.prose-archive pre {
+  background: #18181b;
+  color: #e4e4e7;
+  border-radius: 8px;
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+.prose-archive pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+.prose-archive img { max-width: 100%; height: auto; border-radius: 6px; }
+.prose-archive hr { border: 0; border-top: 1px solid #e4e4e7; margin: 2.5em 0; }
+.prose-archive table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.925rem;
+  display: block;
+  overflow-x: auto;
+}
+.prose-archive th,
+.prose-archive td {
+  border: 1px solid #e4e4e7;
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+}
+.prose-archive th { background: #fafafa; font-weight: 600; }

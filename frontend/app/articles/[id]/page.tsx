@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ArticleBody from "../../components/ArticleBody";
 import EditPlacement from "../../components/EditPlacement";
 import { formatDate, READONLY } from "../../lib/api";
 import { articleGraph, JsonLd } from "../../lib/schema";
@@ -96,6 +97,31 @@ export default async function ArticleDetailPage({
           </p>
         )}
       </div>
+
+      {article.content ? (
+        <div className="mt-6 bg-white border rounded-lg p-8">
+          <ArticleBody markdown={article.content} />
+          {article.url && (
+            <p className="mt-10 pt-6 border-t text-sm text-gray-500">
+              Originally published at{" "}
+              <a
+                href={article.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline"
+              >
+                {new URL(article.url).hostname}
+              </a>
+              .
+            </p>
+          )}
+        </div>
+      ) : (
+        <p className="mt-6 text-sm text-gray-500">
+          Full text is not in the archive for this piece yet; follow the link
+          above to read it at the source.
+        </p>
+      )}
 
       {!READONLY && (
         <EditPlacement article={article} allSeries={allSeries} />

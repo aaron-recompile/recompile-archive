@@ -30,6 +30,8 @@ export interface SeriesWithArticles extends Series {
 
 export interface ArticleWithSeries extends Article {
   series: Series | null;
+  /** Full Markdown body. Only the detail endpoint returns it. */
+  content?: string | null;
 }
 
 export function formatDate(iso: string | null): string {
