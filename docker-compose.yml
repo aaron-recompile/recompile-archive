@@ -51,6 +51,10 @@ services:
     volumes:
       # Bind-mount the api directory for hot reload during demo.
       - ./api:/app
+      # ingest_content.py resolves ../_publish-lab/content relative to /app,
+      # i.e. /_publish-lab/content. Mount it there read-only so the script
+      # runs with no --dir flag instead of needing a docker cp first.
+      - ./_publish-lab:/_publish-lab:ro
 
   frontend:
     build:
