@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import { READONLY } from "./lib/api";
 import "./globals.css";
@@ -86,6 +87,15 @@ export default async function RootLayout({
           </div>
         </nav>
         <div className="flex-1">{children}</div>
+        {/* Cookie-free page counts (GoatCounter), shared with the other bitcoincoding.dev sites. */}
+        <Script id="goatcounter-path" strategy="afterInteractive">
+          {"window.goatcounter = { path: function (p) { return location.host + p } };"}
+        </Script>
+        <Script
+          data-goatcounter="https://bitcoincoding.goatcounter.com/count"
+          src="https://gc.zgo.at/count.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
