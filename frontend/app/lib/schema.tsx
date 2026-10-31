@@ -25,7 +25,8 @@ const thing = (name: string, qid?: string) => ({
   ...(qid ? { sameAs: `https://www.wikidata.org/wiki/${qid}` } : {}),
 });
 
-export const PERSON_ID = `${SITE_URL}/#person`;
+// One person across every bitcoincoding.dev site: the hub holds the canonical entity.
+export const PERSON_ID = "https://bitcoincoding.dev/#aaron";
 export const WEBSITE_ID = `${SITE_URL}/#website`;
 
 /** Person + WebSite, rendered once in the root layout. */
@@ -38,11 +39,18 @@ export function siteGraph(seriesCount: number, articleCount: number) {
         "@id": PERSON_ID,
         name: "Aaron Zhang",
         alternateName: "Aaron Recompile",
-        jobTitle: "Bitcoin Layer 1 Protocol Engineer",
+        jobTitle: "Bitcoin Developer, Educator and Investor",
         description:
-          "Bitcoin protocol engineer working on Taproot and RGB. OpenSats grantee. Author of Mastering Taproot.",
-        url: `${SITE_URL}/`,
-        sameAs: ["https://github.com/aaron-recompile"],
+          "Bitcoin developer, educator and investor. Author of Mastering Taproot and Bitcoin from Scratch.",
+        url: "https://bitcoincoding.dev/",
+        sameAs: [
+          "https://github.com/aaron-recompile",
+          "https://medium.com/@aaron.recompile",
+          "https://x.com/aaron_recompile",
+          "https://orcid.org/0009-0001-1599-092X",
+          "https://delvingbitcoin.org/u/AaronZhang",
+          `${SITE_URL}/`,
+        ],
         knowsAbout: [
           thing("Bitcoin", WIKIDATA.bitcoin),
           thing("Taproot", WIKIDATA.taproot),
